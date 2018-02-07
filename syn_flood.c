@@ -150,7 +150,7 @@ send_synflood(void *addr) {
 
 	/* 处于活动状态时持续发送SYN包 */
 	while (alive) {
-		ip.sourceIP = htonl(myrandom(0xcc000000, 0xcccccccc));
+		ip.sourceIP = htonl(myrandom(0xddcccccc, 0xeefefefe));
 		struct in_addr add;
 		add.s_addr = ip.sourceIP;
 		printf("source addr is %s\n", inet_ntoa(add));
